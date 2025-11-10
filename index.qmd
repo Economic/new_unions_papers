@@ -1,5 +1,5 @@
 ---
-title: "Recent Union Papers"
+title: "Recent papers on unions"
 format:
   html:
     page-layout: full
