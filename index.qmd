@@ -1,5 +1,5 @@
 ---
-title: "Recent Minimum Wage Papers"
+title: "Recent Union Papers"
 format:
   html:
     page-layout: full
@@ -9,7 +9,7 @@ execute:
   echo: FALSE
 ---
 
-This page displays a list of recent papers mentioning minimum wages, sourced from [OpenAlex](https://openalex.org/), [NBER](https://www.nber.org/papers), and [IZA](https://www.iza.org/publications/dp).
+This page displays a list of recent papers analyzing the effects of unions, sourced from [OpenAlex](https://openalex.org/), [NBER](https://www.nber.org/papers), and [IZA](https://www.iza.org/publications/dp).
 
 ```{r}
 #| label: setup
@@ -19,12 +19,12 @@ library(reactable)
 library(dplyr)
 library(htmltools)
 
-min_wage_papers = read_csv("min_wage_papers.csv") |> 
-  arrange(desc(publication_date)) |> 
-  mutate(publication_date = format(publication_date, "%B %Y")) |> 
+union_papers = read_csv("union_papers.csv") |>
+  arrange(desc(publication_date)) |>
+  mutate(publication_date = format(publication_date, "%B %Y")) |>
   filter(first_retrieved_date >= Sys.Date() - 365)
 
-main_rows = min_wage_papers |> 
+main_rows = union_papers |>
   select(authors, publication_date, journal, title)
 
 ```
@@ -61,7 +61,7 @@ reactable(
       minWidth = 200,
       html = TRUE,
       cell = function(value, index) {
-        work_url = min_wage_papers$doi[index]
+        work_url = union_papers$doi[index]
         sprintf('<div data-label="Source"><a class="journal-name" href="%s" target="_blank">%s</a></div>', work_url, value)
       }
     ),

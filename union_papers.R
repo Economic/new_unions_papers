@@ -441,11 +441,9 @@ oa_from_date = as.Date(oa_to_date) - 365
 initial_journals = read_csv("initial_journals.csv")
 issns = initial_journals$issn
 
-mw_query = '"minimum wage" OR "minimum wages" OR "minimum wage\'s"'
-lw_query = '"living wage" OR "living wages" OR "living wage\'s"'
-tw_query = '"tipped wage" OR "tipped wages" OR "tipped wage\'s"'
+union_query = '"union" OR "unions"'
 
-search_query = paste(mw_query, lw_query, tw_query, sep = " OR ")
+search_query = union_query
 
 # Fetch data from OpenAlex
 papers_from_oa = oa_fetch(
@@ -458,7 +456,7 @@ papers_from_oa = oa_fetch(
 ) |>
   clean_oa_papers()
 
-nber_search_query = "minimum wage|living wage|tipped_wage"
+nber_search_query = "union"
 nber_to_date = Sys.Date()
 nber_from_date = as.Date(nber_to_date) - 365
 
@@ -471,7 +469,7 @@ papers_from_nber = nber_fetch(
 # Fetch papers from IZA
 # Use regex pattern for filtering (like NBER)
 # will only search the last two months
-iza_search_query = "minimum wage|living wage|tipped wage"
+iza_search_query = "union"
 iza_to_date = Sys.Date()
 iza_from_date = as.Date(iza_to_date) - months(2)
 papers_from_iza = iza_fetch(
@@ -482,18 +480,42 @@ papers_from_iza = iza_fetch(
 
 all_papers = papers_from_oa |>
   bind_rows(papers_from_nber) |>
-  bind_rows(papers_from_iza)
+  bind_rows(papers_from_iza) |>
+  # Filter out currency union/European Union papers unless they have additional union mentions
+  mutate(
+    # Combine title and abstract for searching
+    text_combined = str_to_lower(paste(title, abstract, sep = " ")),
+    # Count total occurrences of "union"
+    total_union_count = str_count(text_combined, "union"),
+    # Count occurrences of "currency union" or other false positives
+    false_union_count = str_count(
+      text_combined,
+      "currency union|european union|monetary union|credit union|soviet union"
+    ),
+    # Determine if there are enough additional_union_mentions
+    additional_union_mentions = total_union_count > false_union_count,
+    # Keep paper if it doesn't mention currency/European union, OR if it has additional mentions
+    keep_paper = additional_union_mentions
+  ) |>
+  filter(keep_paper) |>
+  select(
+    -text_combined,
+    -total_union_count,
+    -false_union_count,
+    -additional_union_mentions,
+    -keep_paper
+  )
 
 # Existing data
 existing_papers = NULL
-if (file.exists("min_wage_papers.csv")) {
-  existing_papers = read_csv("min_wage_papers.csv", show_col_types = FALSE)
+if (file.exists("union_papers.csv")) {
+  existing_papers = read_csv("union_papers.csv", show_col_types = FALSE)
 }
 
 combined_papers = update_papers(new = all_papers, old = existing_papers)
 
 combined_papers |>
-  write_csv("min_wage_papers.csv")
+  write_csv("union_papers.csv")
 
 # Read list of already-emailed papers
 emailed_papers = NULL
@@ -504,4 +526,4 @@ if (file.exists("emailed_papers.csv")) {
 # Find papers that are new AND haven't been emailed yet
 combined_papers |>
   anti_join(emailed_papers, by = "openalex_id") |>
-  write_csv("min_wage_papers_to_email.csv")
+  write_csv("union_papers_to_email.csv")

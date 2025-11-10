@@ -1,4 +1,4 @@
-name: Update Minimum Wage Papers Data
+name: Update Union Papers Data
 
 on:
   schedule:
@@ -24,7 +24,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
 
       - name: Run R script
-        run: Rscript min_wage_papers.R
+        run: Rscript union_papers.R
         env:
           OPENALEX_EMAIL: ${{ secrets.OPENALEX_EMAIL }}
 
@@ -33,8 +33,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git config --global url.https://${{ secrets.PAT_GITHUB }}@github.com/.insteadOf https://github.com/
-          git add min_wage_papers.csv min_wage_papers_to_email.csv
-          git commit -m "Update minimum wage papers data" || echo "No changes to commit"
+          git add union_papers.csv union_papers_to_email.csv
+          git commit -m "Update union papers data" || echo "No changes to commit"
           git push || echo "No changes to push"
 
       - name: Push changes

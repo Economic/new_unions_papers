@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'min_wage_papers.csv'
+      - 'union_papers.csv'
       - 'index.qmd'
   workflow_dispatch: # Allows manual triggering
 

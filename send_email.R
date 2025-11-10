@@ -4,12 +4,12 @@ library(emayili)
 library(glue)
 
 # Read the CSV file for papers to email
-if (!file.exists('min_wage_papers_to_email.csv')) {
-  cat("No min_wage_papers_to_email.csv file found.\n")
+if (!file.exists('union_papers_to_email.csv')) {
+  cat("No union_papers_to_email.csv file found.\n")
   quit(status = 0)
 }
 
-papers <- read_csv('min_wage_papers_to_email.csv', show_col_types = FALSE) |>
+papers <- read_csv('union_papers_to_email.csv', show_col_types = FALSE) |>
   arrange(desc(publication_date))
 
 # Check if there are any new papers
@@ -199,17 +199,17 @@ html_body <- glue(
 <body>
   <div class="container">
     <div class="header">
-      <h2>New Minimum Wage Papers Detected</h2>
+      <h2>New Union Papers Detected</h2>
     </div>
     <div class="intro">
       <p>The following <span class="count">{paper_count} new {paper_word}</span> {have_word} been added to the
-      <a href="https://benzipperer.github.io/new_mw_papers/">Recent Minimum Wage Papers</a> list:</p>
+      <a href="https://benzipperer.github.io/new_unions_papers/">Recent Union Papers</a> list:</p>
     </div>
     <div class="papers">
       {paper_html}
     </div>
     <div class="footer">
-      Automated notification from the Minimum Wage Papers tracking system
+      Automated notification from the Union Papers tracking system
     </div>
   </div>
 </body>
@@ -259,7 +259,7 @@ tryCatch(
         from(email_from) %>%
         to(recipient) %>%
         subject(glue(
-          "New minimum wage papers for the week ending {week_end_date}"
+          "New union papers for the week ending {week_end_date}"
         )) %>%
         html(html_body)
 
