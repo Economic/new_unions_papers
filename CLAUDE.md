@@ -9,14 +9,14 @@ This is an automated union research paper tracking system that:
 2. Maintains a database of papers with status tracking (new/old/updated)
 3. Sends Slack notifications for newly discovered papers
 4. Publishes an interactive HTML table to GitHub Pages
-5. Filters out papers that only mention "currency union" or "European Union" without other union references
+5. Filters out papers that only mention "union" terms unrelated to labor unions, like "currency union", "European Union", etc.
 
 The system runs via three separate GitHub Actions workflows that operate on different schedules.
 
 ## Key Files
 
 ### Scripts
-- `union_papers.R` - Main data fetching and processing script. Queries OpenAlex API, NBER, and IZA, merges with existing data, tracks paper status (new/old/updated), filters out currency union/European Union papers, and generates CSV outputs.
+- `union_papers.R` - Main data fetching and processing script. Queries OpenAlex API, NBER, and IZA, merges with existing data, tracks paper status (new/old/updated), filters out currency union/European Union/etc papers, and generates CSV outputs.
 - `send_slack.py` - Slack notification system. Sends formatted Slack messages via webhook for new papers. Uses Python standard library only (no external dependencies).
 - `send_email.R` - (Legacy) Original email notification system, kept for reference but no longer used.
 - `index.qmd` - Quarto document that renders the website, displaying papers in an interactive `reactable` table.
@@ -53,7 +53,7 @@ Status tracking prevents duplicate notifications by maintaining two separate tra
 - OpenAlex: Searches for "union" OR "unions" in journals matching ISSNs from `initial_journals.csv`. Looks back 365 days.
 - NBER: Downloads full metadata TSV files, filters by regex matching "union" in title/abstract. Looks back 365 days.
 - IZA: Scrapes IZA Discussion Papers website, filters by regex matching "union" in title/abstract. Looks back 2 months only (shorter window to minimize scraping load).
-- Post-filtering: All papers mentioning "currency union" or "European Union" are filtered out unless they contain additional mentions of "union" in the title or abstract.
+- Post-filtering: All papers mentioning terms like "currency union", "European Union", and other terms unrelated to labor unions are filtered out unless they contain additional mentions of "union" in the title or abstract.
 
 ## Development Commands
 
@@ -120,12 +120,8 @@ Papers are filtered to only include those with `first_retrieved_date >= Sys.Date
 ### Non-OpenAlex ID Handling
 NBER papers use their paper ID (e.g., "w12345") as `openalex_id`, and IZA papers use "iza" + paper ID (e.g., "iza12345"). This allows unified tracking across all data sources, but means `openalex_id` is not always an actual OpenAlex ID.
 
-### Currency Union / European Union Filtering
-After fetching all papers, the system filters out papers that only mention "currency union" or "European Union". Papers are kept if:
-- They don't mention either term at all, OR
-- They mention these terms but also have additional mentions of "union" in the title or abstract
-
-This is implemented by counting all occurrences of "union" and comparing against the count of "currency union" and "European Union" mentions. The filtering logic is case-insensitive.
+### Filtering out false positives
+After fetching all papers, the system filters out papers that only mention "union" in ways unrelated to labor unions, like "currency union", "European Union", "Union army". Papers are kept if there are additional mentions of unions after stripping out these false positives. The filtering logic is case-insensitive.
 
 ### Core Functions in union_papers.R
 - `update_papers(new, old)`: Main reconciliation function that handles null cases and calls `combine_papers()`

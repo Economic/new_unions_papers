@@ -478,32 +478,47 @@ papers_from_iza = iza_fetch(
   iza_search_query
 )
 
+union_terms = c(
+  "union",
+  "organized labor",
+  "collective bargaining",
+  "labor movement"
+) |>
+  paste(collapse = "|")
+
+false_union_string = c(
+  "currency union",
+  "european union",
+  "monetary union",
+  "credit union",
+  "soviet union",
+  "union-of-rejection",
+  "union of sovereign countries",
+  "union's safe assets",
+  "union army"
+) |>
+  paste(collapse = "|")
+
 all_papers = papers_from_oa |>
   bind_rows(papers_from_nber) |>
   bind_rows(papers_from_iza) |>
-  # Filter out currency union/European Union papers unless they have additional union mentions
   mutate(
     # Combine title and abstract for searching
     text_combined = str_to_lower(paste(title, abstract, sep = " ")),
-    # Count total occurrences of "union"
-    total_union_count = str_count(text_combined, "union"),
-    # Count occurrences of "currency union" or other false positives
-    false_union_count = str_count(
+    # Remove false union hits
+    text_combined_stripped = str_replace_all(
       text_combined,
-      "currency union|european union|monetary union|credit union|soviet union"
+      false_union_string,
+      " "
     ),
-    # Determine if there are enough additional_union_mentions
-    additional_union_mentions = total_union_count > false_union_count,
-    # Keep paper if it doesn't mention currency/European union, OR if it has additional mentions
-    keep_paper = additional_union_mentions
+    # Count remaining union terms
+    total_union_count = str_count(text_combined_stripped, union_terms),
   ) |>
-  filter(keep_paper) |>
+  filter(total_union_count > 0) |>
   select(
     -text_combined,
-    -total_union_count,
-    -false_union_count,
-    -additional_union_mentions,
-    -keep_paper
+    -text_combined_stripped,
+    #-total_union_count
   )
 
 # Existing data

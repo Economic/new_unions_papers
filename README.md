@@ -5,11 +5,11 @@ Automated tracking system for union research papers from OpenAlex API, NBER, and
 ## How it works
 
 Three GitHub Actions workflows:
-1. **Daily data fetch**: `union_papers.R` queries APIs, filters out currency/European union papers, updates CSV database
+1. **Daily data fetch**: `union_papers.R` queries APIs, filters out false hits, updates CSV database
 2. **Weekly Slack notifications**: `send_slack.py` sends formatted messages for new papers
 3. **Website deployment**: Publishes interactive table to GitHub Pages when data changes
 
-Papers are tracked for 365 days and filtered to exclude papers that only mention "currency union" or "European Union".
+Papers are tracked for 365 days and filtered to include mentions of unions and to exclude papers with hits unrelated to labor unions.
 
 ## Setup
 
