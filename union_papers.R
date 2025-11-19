@@ -441,14 +441,14 @@ oa_from_date = as.Date(oa_to_date) - 365
 initial_journals = read_csv("initial_journals.csv")
 issns = initial_journals$issn
 
-union_query = '"union" OR "unions"'
+oa_union_query = '"union" OR "unions"'
 
-search_query = union_query
+oa_search_query = oa_union_query
 
 # Fetch data from OpenAlex
 papers_from_oa = oa_fetch(
   entity = "works",
-  search = search_query,
+  search = oa_search_query,
   from_publication_date = oa_from_date,
   to_publication_date = oa_to_date,
   primary_location.source.issn = issns,
@@ -519,7 +519,9 @@ all_papers = papers_from_oa |>
     -text_combined,
     -text_combined_stripped,
     #-total_union_count
-  )
+  ) |>
+  # remove false positives: Issue Information
+  filter(str_to_lower(title) != "issue information")
 
 # Existing data
 existing_papers = NULL
