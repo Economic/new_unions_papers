@@ -456,15 +456,18 @@ papers_from_oa = oa_fetch(
 ) |>
   clean_oa_papers()
 
-nber_search_query = "union"
-nber_to_date = Sys.Date()
-nber_from_date = as.Date(nber_to_date) - 365
 
-papers_from_nber = nber_fetch(
-  nber_from_date,
-  nber_to_date,
-  nber_search_query
-)
+## temporarily disable NBER because its metadata files are missing
+
+# nber_search_query = "union"
+# nber_to_date = Sys.Date()
+# nber_from_date = as.Date(nber_to_date) - 365
+
+# papers_from_nber = nber_fetch(
+#   nber_from_date,
+#   nber_to_date,
+#   nber_search_query
+# )
 
 # Fetch papers from IZA
 # Use regex pattern for filtering (like NBER)
@@ -500,7 +503,7 @@ false_union_string = c(
   paste(collapse = "|")
 
 all_papers = papers_from_oa |>
-  bind_rows(papers_from_nber) |>
+  #bind_rows(papers_from_nber) |>
   bind_rows(papers_from_iza) |>
   mutate(
     # Combine title and abstract for searching
