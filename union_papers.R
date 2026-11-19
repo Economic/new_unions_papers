@@ -430,8 +430,15 @@ nber_fetch = function(
 }
 
 # Set email for polite API access
-openalex_email = Sys.getenv("openalexR.mailto", "agent@example.com")
+openalex_email = Sys.getenv("OPENALEX_EMAIL", "agent@example.com")
 options(openalexR.mailto = openalex_email)
+
+# OpenAlex requires an API key for cursor paging (results beyond the first page)
+openalex_api_key = Sys.getenv("OPENALEX_API_KEY")
+if (openalex_api_key == "") {
+  stop("OPENALEX_API_KEY environment variable is not set")
+}
+options(openalexR.apikey = openalex_api_key)
 
 # Get today's date and the date one year ago
 oa_to_date = Sys.Date()

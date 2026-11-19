@@ -212,6 +212,11 @@ def main():
     # Read papers to notify
     papers = read_papers_to_notify()
 
+    # Skip papers already notified, in case union_papers_to_email.csv is stale
+    # (e.g., the data update job failed and didn't regenerate it)
+    emailed_ids = read_emailed_papers()
+    papers = [p for p in papers if p['openalex_id'] not in emailed_ids]
+
     # Check if there are any papers to notify about
     if not papers:
         print("No new papers found. Skipping Slack notification.")

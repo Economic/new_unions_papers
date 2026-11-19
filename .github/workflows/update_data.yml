@@ -27,6 +27,7 @@ jobs:
         run: Rscript union_papers.R
         env:
           OPENALEX_EMAIL: ${{ secrets.OPENALEX_EMAIL }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
 
       - name: Commit files
         run: |
