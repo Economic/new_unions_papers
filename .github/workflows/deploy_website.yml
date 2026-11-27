@@ -9,18 +9,15 @@ on:
       - 'index.qmd'
   workflow_dispatch: # Allows manual triggering
 
+# Build and deploy run as separate jobs so the Pages artifact is fully
+# registered before deploy-pages looks it up. Running them as back-to-back
+# steps in one job caused intermittent "No artifacts named github-pages" errors.
 jobs:
-  deploy-website:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -38,10 +35,20 @@ jobs:
         run: quarto render index.qmd
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
